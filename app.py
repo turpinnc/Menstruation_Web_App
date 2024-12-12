@@ -11,18 +11,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from joblib import load
 from dotenv import load_dotenv
-
+load_dotenv()  # Make sure this is at the beginning of the script to load the environment variables
 import warnings
+from dotenv import load_dotenv
+import os
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
-from dotenv import load_dotenv
-import os
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-load_dotenv()  # Make sure this is at the beginning of the script to load the environment variables
-
-api_key = os.environ["GEMINI_API_KEY"]  # Access the API key
 
 
 # Load the trained model
