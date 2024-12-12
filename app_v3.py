@@ -27,14 +27,23 @@ st.set_page_config(
 
 # Title of the app with custom styling
 st.markdown("""
-    <h1 style="text-align:center; color:#F4A6D3;">Cycle Prediction and Feedback with Gemini</h1>
+    <h1 style="text-align:center; color:#4C8C91;">Cycle Prediction and Feedback with Gemini</h1>
     <p style="text-align:center; font-size:18px; color:#555;">Track and predict your menstrual cycle with advanced AI.</p>
+""", unsafe_allow_html=True)
+
+# Privacy and Security Message
+st.markdown("""
+    <div style="background-color:#FFEB3B; padding:15px; text-align:center; color:#333; font-size:16px;">
+        <strong>Privacy and Security Notice:</strong><br>
+        We value your privacy. All data entered is processed securely and is not shared with any third parties. 
+        Your personal information will never be sold or spread. Your data is used solely to provide personalized cycle predictions and support.
+    </div>
 """, unsafe_allow_html=True)
 
 # Add a banner-like feature without needing an external image
 st.markdown(
     """
-    <div style="background-color:#F4A6D3; padding:10px; text-align:center; color:white; font-size:18px;">
+    <div style="background-color:#A8DADC; padding:10px; text-align:center; color:white; font-size:18px;">
         🩺 Welcome to the Cycle Prediction Tool! 🩺
     </div>
     """, unsafe_allow_html=True
@@ -60,20 +69,16 @@ input_data_irregularity = pd.DataFrame({
     "Ovulation Day": [ovulation_day]  # For irregularity model
 })
 
-# **Check the columns of input_data before prediction** (print the columns for debugging)
-st.write("Fertility Input Data Columns: ", input_data_fertility.columns)
-st.write("Irregularity Input Data Columns: ", input_data_irregularity.columns)
-
 # **Predict fertility** based on the input data
 fertility_status = rf_clf_fertility_noisy.predict(input_data_fertility)
 
 # Display the fertility prediction
 if fertility_status == 1:
     fertility_message = "High Fertility"
-    fertility_color = "#FF66B2"  # Pink color for high fertility
+    fertility_color = "#2A9D8F"  # Calm greenish-blue for high fertility
 else:
     fertility_message = "Low Fertility"
-    fertility_color = "#FF5733"  # Red color for low fertility
+    fertility_color = "#A8DADC"  # Light blue for low fertility
 
 # Display the fertility prediction with a colored box
 st.markdown(f"""
@@ -96,43 +101,20 @@ if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
     # For cycle irregularity, use the cycle irregularity model
     model_prediction = rf_clf_irregular_balanced.predict(input_data_irregularity)
 
+    # Display the cycle irregularity result in a box with peaceful colors
     if model_prediction == 1:
-        st.write("**Prediction:** Irregular Cycle")
+        irregularity_message = "Irregular Cycle"
+        irregularity_color = "#457B9D"  # Peaceful blue for irregular cycle
     else:
-        st.write("**Prediction:** Regular Cycle")
+        irregularity_message = "Regular Cycle"
+        irregularity_color = "#2A9D8F"  # Calm green for regular cycle
 
-    # Enhanced Bar Chart for Cycle Prediction with better UI
-    labels = ['Regular Cycle', 'Irregular Cycle']
-    counts = [255, 30]  # Example values, replace with your actual prediction counts
-
-    # Create the bar chart
-    fig, ax = plt.subplots(figsize=(8, 6))  # Increase size for better visibility
-    bars = ax.bar(labels, counts, color=['#4CAF50', '#FF5733'], edgecolor='black', linewidth=1.5)
-
-    # Add titles and labels
-    ax.set_title("Cycle Prediction Results", fontsize=18, color="#333", fontweight='bold')
-    ax.set_xlabel("Cycle Type", fontsize=14, color="#555")
-    ax.set_ylabel("Count", fontsize=14, color="#555")
-
-    # Add value labels on top of bars
-    for bar in bars:
-        yval = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, yval + 5,  # Position the label above the bar
-                round(yval, 0), ha='center', fontsize=12, color='black', fontweight='bold')
-
-    # Add gridlines for better readability
-    ax.grid(axis='y', linestyle='--', alpha=0.6)
-
-    # Customize the ticks for a cleaner look
-    ax.tick_params(axis='x', labelsize=12, rotation=0)  # X-ticks should be readable without rotation
-    ax.tick_params(axis='y', labelsize=12)
-
-    # Set background color to white for clarity
-    fig.patch.set_facecolor('#ffffff')
-    ax.set_facecolor('#f8f8f8')
-
-    # Show the plot in the Streamlit app
-    st.pyplot(fig)
+    # Display the cycle irregularity prediction with a colored box
+    st.markdown(f"""
+        <div style="background-color:{irregularity_color}; padding:10px; text-align:center; color:white; font-size:22px; font-weight:bold;">
+            {irregularity_message}
+        </div>
+    """, unsafe_allow_html=True)
 
 # Section for asking questions to Gemini with a nice prompt
 st.write("### Ask Gemini about your cycle:")
@@ -151,11 +133,12 @@ if user_question:
 # Footer with custom text and branding
 st.markdown(
     """
-    <footer style="text-align:center; padding: 20px; font-size: 14px; background-color:#F4A6D3; color:white;">
+    <footer style="text-align:center; padding: 20px; font-size: 14px; background-color:#A8DADC; color:white;">
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
     """, unsafe_allow_html=True
 )
+
 
 
 
