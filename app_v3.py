@@ -31,9 +31,9 @@ st.markdown("""
     <p style="text-align:center; font-size:18px; color:#555;">Track and predict your menstrual cycle with advanced AI.</p>
 """, unsafe_allow_html=True)
 
-# Privacy and Security Message
+# Privacy and Security Message with a soft pink background
 st.markdown("""
-    <div style="background-color:#FFEB3B; padding:15px; text-align:center; color:#333; font-size:16px;">
+    <div style="background-color:#F1D0D6; padding:15px; text-align:center; color:#333; font-size:16px;">
         <strong>Privacy and Security Notice:</strong><br>
         We value your privacy. All data entered is processed securely and is not shared with any third parties. 
         Your personal information will never be sold or spread. Your data is used solely to provide personalized cycle predictions and support.
@@ -138,6 +138,7 @@ st.markdown(
     </footer>
     """, unsafe_allow_html=True
 )
+
 
 
 
