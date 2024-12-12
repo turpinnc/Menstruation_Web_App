@@ -14,7 +14,7 @@ load_dotenv()
 rf_clf_irregular_balanced = load('rf_model_irregular.joblib')
 
 # Configure the Gemini API using Streamlit secrets
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 # Set up page configuration and title
 st.set_page_config(
