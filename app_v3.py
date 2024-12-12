@@ -47,11 +47,11 @@ cycle_length = st.number_input("Cycle Length (Days)", min_value=1, value=28, hel
 ovulation_day = st.number_input("Estimated Ovulation Day", min_value=1, max_value=31, value=14, help="Select the estimated ovulation day.")
 
 # Create the DataFrame with only the relevant columns for prediction
-# Ensure that the column names match exactly what the models expect
+# Ensure the column name matches the one used in model training: "Ovulation Day (Noisy)"
 input_data = pd.DataFrame({
-    "Cycle Number": [cycle_number],  # Use the exact feature names as the model was trained on
+    "Cycle Number": [cycle_number],  # Correct feature names as per the model's training data
     "Cycle Length": [cycle_length],
-    "Ovulation Day": [ovulation_day]
+    "Ovulation Day (Noisy)": [ovulation_day]  # Use "Ovulation Day (Noisy)" to match model expectations
 })
 
 # **Check the columns of input_data before prediction** (print the columns for debugging)
@@ -123,6 +123,7 @@ st.markdown(
     </footer>
     """, unsafe_allow_html=True
 )
+
 
 
 
