@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # Custom header image (use your own image path or URL)
-header_image = Image.open('header_image.png')  # You can replace 'header_image.png' with a file path or URL
+header_image = Image.open('header.png')  # You can replace 'header_image.png' with a file path or URL
 st.image(header_image, use_column_width=True)
 
 # Title of the app with some custom styling
