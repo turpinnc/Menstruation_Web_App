@@ -11,10 +11,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Load the fertility and cycle irregularity models
-rf_clf_fertility_noisy = load('rf_model_fertility.joblib')
-rf_clf_irregular_balanced = load('rf_model_irregular.joblib')
+rf_clf_fertility_noisy = load('rf_model_fertility.joblib')  # Model trained with 'Ovulation Day (Noisy)'
+rf_clf_irregular_balanced = load('rf_model_irregular.joblib')  # Model trained with 'Ovulation Day'
 
-# Configure the Gemini API using Streamlit secrets
+# Configure the Gemini API using the environment variable
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 # Set up page configuration and title
@@ -47,18 +47,25 @@ cycle_length = st.number_input("Cycle Length (Days)", min_value=1, value=28, hel
 ovulation_day = st.number_input("Estimated Ovulation Day", min_value=1, max_value=31, value=14, help="Select the estimated ovulation day.")
 
 # Create the DataFrame with only the relevant columns for prediction
-# Ensure the column name matches the one used in model training: "Ovulation Day (Noisy)"
-input_data = pd.DataFrame({
-    "Cycle Number": [cycle_number],  # Correct feature names as per the model's training data
+# Ensure that "Ovulation Day (Noisy)" is used for fertility and "Ovulation Day" for cycle irregularity
+input_data_fertility = pd.DataFrame({
+    "Cycle Number": [cycle_number],  # Features for fertility model (use "Ovulation Day (Noisy)")
     "Cycle Length": [cycle_length],
-    "Ovulation Day (Noisy)": [ovulation_day]  # Use "Ovulation Day (Noisy)" to match model expectations
+    "Ovulation Day (Noisy)": [ovulation_day]  # For fertility model
+})
+
+input_data_irregularity = pd.DataFrame({
+    "Cycle Number": [cycle_number],  # Features for cycle irregularity model (use "Ovulation Day")
+    "Cycle Length": [cycle_length],
+    "Ovulation Day": [ovulation_day]  # For irregularity model
 })
 
 # **Check the columns of input_data before prediction** (print the columns for debugging)
-st.write("Input Data Columns: ", input_data.columns)
+st.write("Fertility Input Data Columns: ", input_data_fertility.columns)
+st.write("Irregularity Input Data Columns: ", input_data_irregularity.columns)
 
 # **Predict fertility** based on the input data
-fertility_status = rf_clf_fertility_noisy.predict(input_data)
+fertility_status = rf_clf_fertility_noisy.predict(input_data_fertility)
 
 # Display the fertility prediction
 if fertility_status == 1:
@@ -87,18 +94,44 @@ st.pyplot(fig)
 # Predict button for cycle irregularity with a custom icon and color
 if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
     # For cycle irregularity, use the cycle irregularity model
-    model_prediction = rf_clf_irregular_balanced.predict(input_data)
+    model_prediction = rf_clf_irregular_balanced.predict(input_data_irregularity)
 
     if model_prediction == 1:
         st.write("**Prediction:** Irregular Cycle")
     else:
         st.write("**Prediction:** Regular Cycle")
 
-    # Visualize the cycle prediction using a bar chart with custom colors
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(['Regular Cycle', 'Irregular Cycle'], [255, 30], color=['#4CAF50', '#FF5733'])
-    ax.set_title("Prediction Counts", fontsize=14, color="#333")
-    ax.set_ylabel("Count", fontsize=12, color="#555")
+    # Enhanced Bar Chart for Cycle Prediction with better UI
+    labels = ['Regular Cycle', 'Irregular Cycle']
+    counts = [255, 30]  # Example values, replace with your actual prediction counts
+
+    # Create the bar chart
+    fig, ax = plt.subplots(figsize=(8, 6))  # Increase size for better visibility
+    bars = ax.bar(labels, counts, color=['#4CAF50', '#FF5733'], edgecolor='black', linewidth=1.5)
+
+    # Add titles and labels
+    ax.set_title("Cycle Prediction Results", fontsize=18, color="#333", fontweight='bold')
+    ax.set_xlabel("Cycle Type", fontsize=14, color="#555")
+    ax.set_ylabel("Count", fontsize=14, color="#555")
+
+    # Add value labels on top of bars
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, yval + 5,  # Position the label above the bar
+                round(yval, 0), ha='center', fontsize=12, color='black', fontweight='bold')
+
+    # Add gridlines for better readability
+    ax.grid(axis='y', linestyle='--', alpha=0.6)
+
+    # Customize the ticks for a cleaner look
+    ax.tick_params(axis='x', labelsize=12, rotation=0)  # X-ticks should be readable without rotation
+    ax.tick_params(axis='y', labelsize=12)
+
+    # Set background color to white for clarity
+    fig.patch.set_facecolor('#ffffff')
+    ax.set_facecolor('#f8f8f8')
+
+    # Show the plot in the Streamlit app
     st.pyplot(fig)
 
 # Section for asking questions to Gemini with a nice prompt
@@ -123,6 +156,7 @@ st.markdown(
     </footer>
     """, unsafe_allow_html=True
 )
+
 
 
 
