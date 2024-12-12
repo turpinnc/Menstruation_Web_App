@@ -7,7 +7,7 @@ df = pd.read_csv ("SAT_by_Year_Gender_1967_2001.csv")
 df.head()
 
 #No cleaning needed to be done to the dataset
-#Only changed the name of three of the titles
+#Only changed the name of a few of the titles
 #Renaming columns
 df = df.rename(columns={
     'Male_averages': 'M_VM_averages',
