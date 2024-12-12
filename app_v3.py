@@ -10,11 +10,12 @@ from dotenv import load_dotenv
 # Load environment variables (if needed, but not necessary for Streamlit secrets)
 load_dotenv()
 
-# Load the trained model
+# Load the fertility and cycle irregularity models
+rf_clf_fertility_noisy = load('rf_model_fertility.joblib')
 rf_clf_irregular_balanced = load('rf_model_irregular.joblib')
 
 # Configure the Gemini API using Streamlit secrets
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+genai.configure(api_key=st.secrets["GEMINI"]["API_KEY"])
 
 # Set up page configuration and title
 st.set_page_config(
@@ -26,14 +27,14 @@ st.set_page_config(
 
 # Title of the app with custom styling
 st.markdown("""
-    <h1 style="text-align:center; color:#FF66B2;">Cycle Prediction and Feedback with Gemini</h1>
+    <h1 style="text-align:center; color:#F4A6D3;">Cycle Prediction and Feedback with Gemini</h1>
     <p style="text-align:center; font-size:18px; color:#555;">Track and predict your menstrual cycle with advanced AI.</p>
 """, unsafe_allow_html=True)
 
 # Add a banner-like feature without needing an external image
 st.markdown(
     """
-    <div style="background-color:#FF66B2; padding:10px; text-align:center; color:white; font-size:18px;">
+    <div style="background-color:#F4A6D3; padding:10px; text-align:center; color:white; font-size:18px;">
         🩺 Welcome to the Cycle Prediction Tool! 🩺
     </div>
     """, unsafe_allow_html=True
@@ -54,7 +55,6 @@ input_data = pd.DataFrame({
 
 # Fertility prediction function
 def predict_fertility(ovulation_day):
-    # Fertility is high if ovulation is between days 12 and 16
     if 12 <= ovulation_day <= 16:
         return "High Fertility"
     else:
@@ -63,22 +63,36 @@ def predict_fertility(ovulation_day):
 # Predict fertility based on ovulation day
 fertility_prediction = predict_fertility(ovulation_day)
 
-# Visualize fertility prediction using a smaller pie chart with custom colors and labels
-fig, ax = plt.subplots(figsize=(5, 5))  # Adjusted the size of the pie chart
-ax.pie([1 if fertility_prediction == "High Fertility" else 0, 1 if fertility_prediction == "Low Fertility" else 0],
-       labels=["High Fertility", "Low Fertility"], autopct='%1.1f%%', startangle=90, colors=["#FF66B2", "#FF5733"])
-ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-st.pyplot(fig)
+# Use the fertility model to predict the fertility status
+fertility_status = rf_clf_fertility_noisy.predict(input_data)
 
-# Display the fertility prediction with custom styling
+# Display the fertility prediction
+if fertility_status == 1:
+    fertility_message = "High Fertility"
+    fertility_color = "#FF66B2"  # Pink color for high fertility
+else:
+    fertility_message = "Low Fertility"
+    fertility_color = "#FF5733"  # Red color for low fertility
+
+# Display the fertility prediction with a colored box
 st.markdown(f"""
-    <h3 style="text-align:center; color:#FF66B2;">Fertility Prediction</h3>
-    <p style="text-align:center; font-size:22px; font-weight: bold; color:#FF66B2;">{fertility_prediction}</p>
+    <div style="background-color:{fertility_color}; padding:10px; text-align:center; color:white; font-size:22px; font-weight:bold;">
+        Fertility Status: {fertility_message}
+    </div>
 """, unsafe_allow_html=True)
+
+# Alternative representation: A simple colored circle or graphic for fertility
+fig, ax = plt.subplots(figsize=(3, 3))
+circle = plt.Circle((0.5, 0.5), 0.4, color=fertility_color, ec="black", lw=3)
+ax.add_artist(circle)
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.axis("off")
+st.pyplot(fig)
 
 # Predict button for cycle irregularity with a custom icon and color
 if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
-    # Make prediction using the loaded model
+    # For cycle irregularity, use the cycle irregularity model
     model_prediction = rf_clf_irregular_balanced.predict(input_data)
 
     if model_prediction == 1:
@@ -88,7 +102,7 @@ if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
 
     # Visualize the cycle prediction using a bar chart with custom colors
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(['Regular Cycle', 'Irregular Cycle'], [255, 30], color=['#FF66B2', '#FF5733'])
+    ax.bar(['Regular Cycle', 'Irregular Cycle'], [255, 30], color=['#4CAF50', '#FF5733'])
     ax.set_title("Prediction Counts", fontsize=14, color="#333")
     ax.set_ylabel("Count", fontsize=12, color="#555")
     st.pyplot(fig)
@@ -110,10 +124,11 @@ if user_question:
 # Footer with custom text and branding
 st.markdown(
     """
-    <footer style="text-align:center; padding: 20px; font-size: 14px; background-color:#FF66B2; color:white;">
+    <footer style="text-align:center; padding: 20px; font-size: 14px; background-color:#F4A6D3; color:white;">
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
     """, unsafe_allow_html=True
 )
+
 
 
