@@ -17,9 +17,13 @@ import warnings
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
-load_dotenv()
-# Configure Gemini API with your API key (ensure GEMINI_API_KEY is set in your environment variables)
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Make sure this is at the beginning of the script to load the environment variables
+
+api_key = os.environ["GEMINI_API_KEY"]  # Access the API key
+
 
 # Load the trained model
 rf_clf_irregular_balanced = load('rf_model_irregular.joblib')
