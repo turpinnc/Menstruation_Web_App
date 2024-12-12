@@ -10,6 +10,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import load
+from dotenv import load_dotenv
+
 import warnings
 
 # Suppress warnings
@@ -17,7 +19,7 @@ warnings.filterwarnings("ignore")
 
 load_dotenv()
 # Configure Gemini API with your API key (ensure GEMINI_API_KEY is set in your environment variables)
-genai.configure(api_key=os.environ["AIzaSyBOtjDDsCj3fbXW_kttSr60Y_gcikawTyY"])
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 # Load the trained model
 rf_clf_irregular_balanced = load('rf_model_irregular.joblib')
