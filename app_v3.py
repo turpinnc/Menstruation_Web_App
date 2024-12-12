@@ -47,23 +47,17 @@ cycle_length = st.number_input("Cycle Length (Days)", min_value=1, value=28, hel
 ovulation_day = st.number_input("Estimated Ovulation Day", min_value=1, max_value=31, value=14, help="Select the estimated ovulation day.")
 
 # Create the DataFrame with only the relevant columns for prediction
+# Ensure that the column names match exactly what the models expect
 input_data = pd.DataFrame({
-    "cycle_number": [cycle_number],  # Ensure these are the features used by the model
-    "cycle_length": [cycle_length],
-    "ovulation_day": [ovulation_day]
+    "Cycle Number": [cycle_number],  # Use the exact feature names as the model was trained on
+    "Cycle Length": [cycle_length],
+    "Ovulation Day": [ovulation_day]
 })
 
-# Fertility prediction function
-def predict_fertility(ovulation_day):
-    if 12 <= ovulation_day <= 16:
-        return "High Fertility"
-    else:
-        return "Low Fertility"
+# **Check the columns of input_data before prediction** (print the columns for debugging)
+st.write("Input Data Columns: ", input_data.columns)
 
-# Predict fertility based on ovulation day
-fertility_prediction = predict_fertility(ovulation_day)
-
-# Use the fertility model to predict the fertility status
+# **Predict fertility** based on the input data
 fertility_status = rf_clf_fertility_noisy.predict(input_data)
 
 # Display the fertility prediction
