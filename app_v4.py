@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from joblib import load
+import seaborn as sns
+import pickle
+from dotenv import load_dotenv
 import os
 import google.generativeai as genai
-from dotenv import load_dotenv
 
 # Load environment variables (if needed)
 load_dotenv()
@@ -12,9 +13,12 @@ load_dotenv()
 # Configure the Gemini API using the environment variable
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-# Load the new trained models
-rf_fertility = load("rf_fertility_model.joblib")
-rf_regular_cycle = load("rf_regular_cycle_model.joblib")
+# Load the models from pickle files
+with open('rf_fertility_model.pkl', 'rb') as file:
+    rf_fertility = pickle.load(file)
+
+with open('rf_regular_cycle_model.pkl', 'rb') as file:
+    rf_regular_cycle = pickle.load(file)
 
 # Set up Streamlit page configuration
 st.set_page_config(
@@ -41,14 +45,52 @@ st.markdown("""
 
 # User Inputs
 st.write("### Please enter your cycle details:")
-cycle_length = st.number_input("Cycle Length (Days)", min_value=1, value=28, help="Enter the length of your cycle in days.")
-average_cycle_length = st.number_input("Average Cycle Length (Days)", min_value=1, value=28, help="Enter the average cycle length.")
-ovulation_day = st.number_input("Estimated Ovulation Day", min_value=1, max_value=31, value=14, help="Select the estimated ovulation day.")
-luteal_phase_length = st.number_input("Luteal Phase Length (Days)", min_value=1, max_value=18, value=12, help="Enter the luteal phase length.")
-high_fertility_start = st.number_input("High Fertility Start (Days)", min_value=1, max_value=31, value=12, help="Enter the start of high fertility days.")
-peak_cycle = st.selectbox("Peak Cycle (Yes=1, No=0)", [1, 0])
-body_mass_index = st.number_input("Body Mass Index (BMI)", min_value=10.0, max_value=50.0, value=22.0, step=0.1)
-reproductive_status = st.selectbox("Reproductive Status (Fertile=1, Not Fertile=0)", [1, 0])
+cycle_length = st.number_input(
+    "Cycle Length (Days)", 
+    min_value=1, 
+    value=28, 
+    help="Enter the total length of your cycle in days, including the days of menstruation and other phases."
+)
+average_cycle_length = st.number_input(
+    "Average Cycle Length (Days)", 
+    min_value=1, 
+    value=28, 
+    help="Provide the average cycle length based on your past tracked cycles. This helps identify consistency."
+)
+ovulation_day = st.number_input(
+    "Estimated Ovulation Day", 
+    min_value=1, 
+    max_value=31, 
+    value=14, 
+    help="Enter the day of your cycle when ovulation typically occurs. This is usually midway through your cycle."
+)
+luteal_phase_length = st.number_input(
+    "Luteal Phase Length (Days)", 
+    min_value=1, 
+    max_value=18, 
+    value=12, 
+    help="The number of days between ovulation and the start of your next period."
+)
+high_fertility_start = st.number_input(
+    "High Fertility Start (Days)", 
+    min_value=1, 
+    max_value=31, 
+    value=12, 
+    help="Enter the day of your cycle when high fertility typically begins."
+)
+body_mass_index = st.number_input(
+    "Body Mass Index (BMI)", 
+    min_value=10.0, 
+    max_value=50.0, 
+    value=22.0, 
+    step=0.1, 
+    help="Your body mass index, a measure of body fat based on height and weight."
+)
+reproductive_status = st.selectbox(
+    "Reproductive Status (Fertile=1, Not Fertile=0)", 
+    [1, 0], 
+    help="Select your current reproductive status: Fertile (1) or Not Fertile (0)."
+)
 
 # Prediction Input Data
 input_data = pd.DataFrame({
@@ -57,33 +99,36 @@ input_data = pd.DataFrame({
     "Ovulation Day": [ovulation_day],
     "Luteal Phase Length": [luteal_phase_length],
     "High Fertility Start": [high_fertility_start],
-    "Peak Cycle": [peak_cycle],
     "Body Mass Index": [body_mass_index],
     "Reproductive Status": [reproductive_status]
 })
 
-# Predict Fertility
-fertility_status = rf_fertility.predict(input_data)[0]
-fertility_message = "High Fertility" if fertility_status == 1 else "Low Fertility"
-fertility_color = "#2A9D8F" if fertility_status == 1 else "#A8DADC"
+# Dynamic Prediction Feedback
+st.write("### Predictions:")
 
-st.markdown(f"""
-    <div style="background-color:{fertility_color}; padding:10px; text-align:center; color:white; font-size:22px; font-weight:bold;">
-        Fertility Status: {fertility_message}
-    </div>
-""", unsafe_allow_html=True)
+# Fertility Prediction with Feedback
+if st.button("Get Fertility Prediction"):
+    fertility_prediction = rf_fertility.predict(input_data)[0]
+    fertility_message = "High Fertility" if fertility_prediction == 1 else "Low Fertility"
+    fertility_color = "#2A9D8F" if fertility_prediction == 1 else "#A8DADC"
+    
+    st.markdown(f"""
+        <div style="background-color:{fertility_color}; padding:10px; text-align:center; color:white; font-size:22px; font-weight:bold;">
+            Fertility Status: {fertility_message}
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Circular Visualization for Fertility
+    fig, ax = plt.subplots(figsize=(3, 3))
+    circle = plt.Circle((0.5, 0.5), 0.4, color=fertility_color, ec="black", lw=3)
+    ax.add_artist(circle)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    st.pyplot(fig)
 
-# Circular Visualization for Fertility
-fig, ax = plt.subplots(figsize=(3, 3))
-circle = plt.Circle((0.5, 0.5), 0.4, color=fertility_color, ec="black", lw=3)
-ax.add_artist(circle)
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 1)
-ax.axis("off")
-st.pyplot(fig)
-
-# Predict Cycle Regularity
-if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
+# Cycle Regularity Prediction with Feedback
+if st.button("Get Cycle Regularity Prediction"):
     cycle_regular_status = rf_regular_cycle.predict(input_data)[0]
     irregularity_message = "Irregular Cycle" if cycle_regular_status == 1 else "Regular Cycle"
     irregularity_color = "#457B9D" if cycle_regular_status == 1 else "#2A9D8F"
@@ -93,6 +138,29 @@ if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
             {irregularity_message}
         </div>
     """, unsafe_allow_html=True)
+
+# Visuals: Correlation Heatmap
+if st.checkbox("Show Correlation Heatmap"):
+    # Generate sample data or load real dataset
+    data = input_data.copy()
+    correlation_matrix = data.corr()
+
+    st.write("### Correlation Heatmap")
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax)
+    st.pyplot(fig)
+
+# Visuals: Feature Importance
+if st.checkbox("Show Feature Importance"):
+    st.write("### Feature Importance for Fertility Prediction")
+    fig, ax = plt.subplots(figsize=(8, 5))
+    feature_importance = pd.DataFrame({
+        'Feature': input_data.columns,
+        'Importance': rf_fertility.feature_importances_
+    }).sort_values(by='Importance', ascending=False)
+    ax.barh(feature_importance['Feature'], feature_importance['Importance'], color="skyblue")
+    ax.set_title("Fertility Feature Importance")
+    st.pyplot(fig)
 
 # Gemini API Integration
 st.write("### Ask Gemini about your cycle:")
@@ -110,4 +178,5 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
 
