@@ -10,7 +10,6 @@ import google.generativeai as genai
 # Load environment variables (if needed)
 load_dotenv()
 
-
 # Configure the Gemini API using the environment variable
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
@@ -98,17 +97,24 @@ reproductive_status = st.selectbox(
     help="Select your current reproductive status: Fertile (1) or Not Fertile (0)."
 )
 
-# Prediction Input Data
+# Ensure the input data matches the exact feature names
+feature_columns = [
+    "Cycle Length", "Ovulation Day", "Luteal Phase Length", 
+    "Average Cycle Length", "Peak Cycle", "Body Mass Index", 
+    "Reproductive Status", "High Fertility Start"
+]
+
+# Create a DataFrame for predictions
 input_data = pd.DataFrame({
     "Cycle Length": [cycle_length],
-    "Average Cycle Length": [average_cycle_length],
     "Ovulation Day": [ovulation_day],
     "Luteal Phase Length": [luteal_phase_length],
-    "High Fertility Start": [high_fertility_start],
+    "Average Cycle Length": [average_cycle_length],
     "Peak Cycle": [peak_cycle],
     "Body Mass Index": [body_mass_index],
-    "Reproductive Status": [reproductive_status]
-})
+    "Reproductive Status": [reproductive_status],
+    "High Fertility Start": [high_fertility_start]
+})[feature_columns]  # Ensure the column order matches exactly
 
 # Dynamic Prediction Feedback
 st.write("### Predictions:")
@@ -124,15 +130,6 @@ if st.button("Get Fertility Prediction"):
             Fertility Status: {fertility_message}
         </div>
     """, unsafe_allow_html=True)
-    
-    # Circular Visualization for Fertility
-    fig, ax = plt.subplots(figsize=(3, 3))
-    circle = plt.Circle((0.5, 0.5), 0.4, color=fertility_color, ec="black", lw=3)
-    ax.add_artist(circle)
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis("off")
-    st.pyplot(fig)
 
 # Cycle Regularity Prediction with Feedback
 if st.button("Get Cycle Regularity Prediction"):
@@ -146,38 +143,18 @@ if st.button("Get Cycle Regularity Prediction"):
         </div>
     """, unsafe_allow_html=True)
 
-# Visuals: Correlation Heatmap
-if st.checkbox("Show Correlation Heatmap"):
-    # Generate sample data or load real dataset
-    data = input_data.copy()
-    correlation_matrix = data.corr()
-
-    st.write("### Correlation Heatmap")
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax)
-    st.pyplot(fig)
-
-# Visuals: Feature Importance
-if st.checkbox("Show Feature Importance"):
-    st.write("### Feature Importance for Fertility Prediction")
-    fig, ax = plt.subplots(figsize=(8, 5))
-    feature_importance = pd.DataFrame({
-        'Feature': input_data.columns,
-        'Importance': rf_fertility.feature_importances_
-    }).sort_values(by='Importance', ascending=False)
-    ax.barh(feature_importance['Feature'], feature_importance['Importance'], color="skyblue")
-    ax.set_title("Fertility Feature Importance")
-    st.pyplot(fig)
-
-# Gemini API Integration
+# Section for asking questions to Gemini with a nice prompt
 st.write("### Ask Gemini about your cycle:")
 user_question = st.text_input("Ask a question about your cycle", help="Type your question here.")
+
 if user_question:
+    # Use Gemini to generate a response to the user’s question
+    model = genai.GenerativeModel("gemini-1.5-flash")
     try:
-        gemini_response = genai.generate_text(prompt=user_question)
-        st.success(f"Gemini's Response: {gemini_response['text']}")
+        response = model.generate_content(user_question)
+        st.write(f"**Gemini's Response:** {response.text}")
     except Exception as e:
-        st.error(f"Error with Gemini API: {e}")
+        st.write(f"Error occurred: {e}")
 
 # Footer
 st.markdown("""
@@ -185,6 +162,8 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
+
 
 
 
