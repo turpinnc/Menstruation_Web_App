@@ -130,6 +130,15 @@ if st.button("Get Fertility Prediction"):
             Fertility Status: {fertility_message}
         </div>
     """, unsafe_allow_html=True)
+    
+    # Circular Visualization for Fertility
+    fig, ax = plt.subplots(figsize=(3, 3))
+    circle = plt.Circle((0.5, 0.5), 0.4, color=fertility_color, ec="black", lw=3)
+    ax.add_artist(circle)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    st.pyplot(fig)
 
 # Cycle Regularity Prediction with Feedback
 if st.button("Get Cycle Regularity Prediction"):
@@ -142,6 +151,14 @@ if st.button("Get Cycle Regularity Prediction"):
             {irregularity_message}
         </div>
     """, unsafe_allow_html=True)
+
+# Correlation Heatmap Visualization
+st.write("### Correlation Heatmap:")
+data_for_correlation = input_data.copy()  # Use input data for demonstration
+corr = data_for_correlation.corr()
+fig, ax = plt.subplots(figsize=(8, 6))
+sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
+st.pyplot(fig)
 
 # Section for asking questions to Gemini with a nice prompt
 st.write("### Ask Gemini about your cycle:")
@@ -162,6 +179,7 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
 
 
 
