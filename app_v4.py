@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configure the Gemini API using the environment variable
-genai.configure(api_key=os.environ("GEMINI_API_KEY"))
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 # Load the new trained models
 rf_fertility = load("rf_fertility_model.joblib")
