@@ -151,6 +151,10 @@ if st.button("Get Cycle Regularity Prediction"):
         </div>
     """, unsafe_allow_html=True)
 
+
+cycle_regular_probabilities = rf_regular_cycle.predict_proba(input_data)
+st.write(f"Cycle Regularity Prediction Probabilities: {cycle_regular_probabilities}")
+
 # Feature Importance Visualization
 st.write("### Feature Importance:")
 feature_importance_fertility = pd.Series(rf_fertility.feature_importances_, index=feature_columns)
