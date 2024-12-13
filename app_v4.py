@@ -10,6 +10,7 @@ import google.generativeai as genai
 # Load environment variables (if needed)
 load_dotenv()
 
+
 # Configure the Gemini API using the environment variable
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
@@ -78,6 +79,11 @@ high_fertility_start = st.number_input(
     value=12, 
     help="Enter the day of your cycle when high fertility typically begins."
 )
+peak_cycle = st.selectbox(
+    "Peak Cycle (Yes=1, No=0)", 
+    [1, 0], 
+    help="Indicate if this cycle has a noticeable peak fertility phase (1 for Yes, 0 for No)."
+)
 body_mass_index = st.number_input(
     "Body Mass Index (BMI)", 
     min_value=10.0, 
@@ -99,6 +105,7 @@ input_data = pd.DataFrame({
     "Ovulation Day": [ovulation_day],
     "Luteal Phase Length": [luteal_phase_length],
     "High Fertility Start": [high_fertility_start],
+    "Peak Cycle": [peak_cycle],
     "Body Mass Index": [body_mass_index],
     "Reproductive Status": [reproductive_status]
 })
@@ -178,5 +185,6 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
 
 
