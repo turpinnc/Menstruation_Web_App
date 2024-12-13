@@ -155,20 +155,36 @@ if st.button("Get Cycle Regularity Prediction"):
 
 
 
-# Feature Importance Visualization
-st.write("### Feature Importance:")
-feature_importance_fertility = pd.Series(rf_fertility.feature_importances_, index=feature_columns)
-feature_importance_cycle = pd.Series(rf_regular_cycle.feature_importances_, index=feature_columns)
+# Plot feature importances for both models side by side
+import matplotlib.pyplot as plt
+import numpy as np
 
-fig, ax = plt.subplots(figsize=(8, 5))
-feature_importance_fertility.plot(kind="bar", color="#2A9D8F", alpha=0.7, ax=ax, label="Fertility Model")
-feature_importance_cycle.plot(kind="bar", color="#457B9D", alpha=0.7, ax=ax, label="Cycle Regularity Model")
-ax.set_title("Feature Importance in Predictions")
-ax.set_ylabel("Importance Score")
-ax.set_xlabel("Features")
-ax.legend()
-plt.xticks(rotation=45)
-st.pyplot(fig)
+# Get feature importances
+fertility_importance = rf_fertility.feature_importances_
+regularity_importance = rf_regular_cycle.feature_importances_
+
+# Features and indices
+indices = np.arange(len(feature_columns))
+
+# Plot
+plt.figure(figsize=(10, 6))
+width = 0.35  # Bar width
+
+# Fertility model importances
+plt.bar(indices - width / 2, fertility_importance, width, label="Fertility Model", color="skyblue", edgecolor="black")
+
+# Cycle regularity model importances
+plt.bar(indices + width / 2, regularity_importance, width, label="Cycle Regularity Model", color="lightgreen", edgecolor="black")
+
+# Add labels and title
+plt.xticks(indices, feature_columns, rotation=45, ha="right")
+plt.ylabel("Importance Score")
+plt.title("Feature Importance in Predictions")
+plt.legend(loc="upper right")
+plt.tight_layout()
+
+st.pyplot(plt)
+
 
 # Section for asking questions to Gemini with a nice prompt
 st.write("### Ask Gemini about your cycle:")
