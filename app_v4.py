@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pickle
 from dotenv import load_dotenv
 import os
@@ -152,12 +151,19 @@ if st.button("Get Cycle Regularity Prediction"):
         </div>
     """, unsafe_allow_html=True)
 
-# Correlation Heatmap Visualization
-st.write("### Correlation Heatmap:")
-data_for_correlation = input_data.copy()  # Use input data for demonstration
-corr = data_for_correlation.corr()
-fig, ax = plt.subplots(figsize=(8, 6))
-sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
+# Feature Importance Visualization
+st.write("### Feature Importance:")
+feature_importance_fertility = pd.Series(rf_fertility.feature_importances_, index=feature_columns)
+feature_importance_cycle = pd.Series(rf_regular_cycle.feature_importances_, index=feature_columns)
+
+fig, ax = plt.subplots(figsize=(8, 5))
+feature_importance_fertility.plot(kind="bar", color="#2A9D8F", alpha=0.7, ax=ax, label="Fertility Model")
+feature_importance_cycle.plot(kind="bar", color="#457B9D", alpha=0.7, ax=ax, label="Cycle Regularity Model")
+ax.set_title("Feature Importance in Predictions")
+ax.set_ylabel("Importance Score")
+ax.set_xlabel("Features")
+ax.legend()
+plt.xticks(rotation=45)
 st.pyplot(fig)
 
 # Section for asking questions to Gemini with a nice prompt
@@ -179,6 +185,7 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
 
 
 
