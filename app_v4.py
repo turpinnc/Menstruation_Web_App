@@ -142,8 +142,10 @@ if st.button("Get Fertility Prediction"):
 # Cycle Regularity Prediction with Feedback
 if st.button("Get Cycle Regularity Prediction"):
     cycle_regular_status = rf_regular_cycle.predict(input_data)[0]
-    irregularity_message = "Irregular Cycle" if cycle_regular_status == 1 else "Regular Cycle"
-    irregularity_color = "#457B9D" if cycle_regular_status == 1 else "#2A9D8F"
+    
+    # Flip the interpretation
+    irregularity_message = "Regular Cycle" if cycle_regular_status == 1 else "Irregular Cycle"
+    irregularity_color = "#2A9D8F" if cycle_regular_status == 1 else "#457B9D"
     
     st.markdown(f"""
         <div style="background-color:{irregularity_color}; padding:10px; text-align:center; color:white; font-size:22px; font-weight:bold;">
@@ -152,8 +154,6 @@ if st.button("Get Cycle Regularity Prediction"):
     """, unsafe_allow_html=True)
 
 
-cycle_regular_probabilities = rf_regular_cycle.predict_proba(input_data)
-st.write(f"Cycle Regularity Prediction Probabilities: {cycle_regular_probabilities}")
 
 # Feature Importance Visualization
 st.write("### Feature Importance:")
