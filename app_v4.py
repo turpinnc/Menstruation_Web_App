@@ -3,21 +3,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from joblib import load
 import os
-from dotenv import load_dotenv
-import streamlit as st
-import os
 import google.generativeai as genai
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from joblib import load
 from dotenv import load_dotenv
 
 # Load environment variables (if needed)
 load_dotenv()
 
 # Configure the Gemini API using the environment variable
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+genai.configure(api_key=os.environ("GEMINI_API_KEY"))
 
 # Load the new trained models
 rf_fertility = load("rf_fertility_model.joblib")
@@ -25,7 +18,7 @@ rf_regular_cycle = load("rf_regular_cycle_model.joblib")
 
 # Set up Streamlit page configuration
 st.set_page_config(
-    page_title="Cycle Prediction and Feedback",
+    page_title="Cycle Prediction and Feedback with Gemini",
     page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -105,9 +98,11 @@ if st.button('🔮 Predict Cycle Regularity', key="predict_button"):
 st.write("### Ask Gemini about your cycle:")
 user_question = st.text_input("Ask a question about your cycle", help="Type your question here.")
 if user_question:
-    # Mock Gemini API integration
-    gemini_response = f"Gemini Response: Here's advice based on your question '{user_question}' - Stay consistent with cycle tracking."
-    st.success(gemini_response)
+    try:
+        gemini_response = genai.generate_text(prompt=user_question)
+        st.success(f"Gemini's Response: {gemini_response['text']}")
+    except Exception as e:
+        st.error(f"Error with Gemini API: {e}")
 
 # Footer
 st.markdown("""
@@ -115,3 +110,4 @@ st.markdown("""
         Powered by Streamlit & Gemini AI. Created with ❤️ for women's health.
     </footer>
 """, unsafe_allow_html=True)
+
